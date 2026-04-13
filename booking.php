@@ -1,34 +1,52 @@
 <?php
-$subject = 'New Schedule Visit Request'; // Subject of your email
-$to = 'contact@designesia.com';  //Recipient's E-mail
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-$emailTo = $_POST['email'];
-$name = $_POST['name'];
-$email = $_POST['email'];
-$msg = $_POST['message'];
-$date = $_POST['date'];
-$time = $_POST['time'];
+require 'vendor/autoload.php';
 
-$email_from = $name. ' ' . '<'.$email.'>';
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-$headers = "MIME-Version: 1.1";
-$headers .= "Content-type: text/html; charset=iso-8859-1";
-$headers .= "From: ".$name.'<'.$email.'>'."\r\n"; // Sender's E-mail
-$headers .= "Return-Path:"."From:" . $email;
+    // Get form data safely
+    $name    = htmlspecialchars($_POST['name']);
+    $email   = htmlspecialchars($_POST['email']);
+    $phone   = htmlspecialchars($_POST['phone']);
+    $date    = htmlspecialchars($_POST['date']);
+    $message = htmlspecialchars($_POST['message']);
 
-$message .= 'Name : ' . $name . "\n";
-$message .= 'Email : ' . $email . "\n";
-$message .= 'Date & Time : ' . $date . " " . $time . "\n";
-$message .= 'Message : ' . $msg;
+    $mail = new PHPMailer(true);
 
-if (@mail($to, $subject, $message, $email_from))
-{
-	// Transfer the value 'sent' to ajax function for showing success message.
-	echo 'sent';
+    try {
+        // SMTP settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'teamragimedia@gmail.com';
+        $mail->Password   = 'covvioknbdsobpfu '; // ⚠️ NOT your Gmail password
+        $mail->SMTPSecure = 'ssl';
+        $mail->Port       = 465;
+
+        // Sender & Receiver
+        $mail->setFrom('teamragimedia@gmail.com', 'Website Booking');
+        $mail->addReplyTo($email, $name);
+        $mail->addAddress('mani072409@gmail.com', 'Mani');
+
+        // Email Content
+        $mail->isHTML(true);
+       $mail->Subject = "New Booking from $name ($email)";
+
+        $mail->Body = "
+            <h3>New Booking Details</h3>
+            <p><b>Name:</b> $name</p>
+            <p><b>Email:</b> $email</p>
+            <p><b>Phone:</b> $phone</p>
+            <p><b>Date:</b> $date</p>
+            <p><b>Message:</b> $message</p>
+        ";
+
+        $mail->send();
+        echo "success";
+
+    } catch (Exception $e) {
+        echo "error: " . $mail->ErrorInfo;
+    }
 }
-else
-{
-	// Transfer the value 'failed' to ajax function for showing error message.
-	echo 'failed';
-}
-?>

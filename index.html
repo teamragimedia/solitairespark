@@ -1325,7 +1325,12 @@
                 </div> -->
 
             <div class="col-md-5">
-              <form name="bookingForm" id="booking_form">
+              <form
+                name="bookingForm"
+                id="booking_form"
+                action="booking.php"
+                method="post"
+              >
                 <div class="row g-4">
                   <div class="col-md-6">
                     <input
@@ -1541,7 +1546,7 @@
         const form = document.getElementById("booking_form");
 
         form.addEventListener("submit", function (e) {
-          e.preventDefault(); // STOP form submission
+          e.preventDefault();
 
           let name = document.getElementById("name").value.trim();
           let email = document.getElementById("email").value.trim();
@@ -1559,31 +1564,31 @@
           successBox.style.display = "none";
 
           // VALIDATION
-          if (name === "") {
-            return showError("Enter your name");
-          }
-
-          if (!emailPattern.test(email)) {
-            return showError("Enter valid email");
-          }
-
-          if (!phonePattern.test(phone)) {
+          if (name === "") return showError("Enter your name");
+          if (!emailPattern.test(email)) return showError("Enter valid email");
+          if (!phonePattern.test(phone))
             return showError("Enter valid 10-digit phone number");
-          }
+          if (date === "") return showError("Select date");
+          if (message === "") return showError("Enter your message");
 
-          if (date === "") {
-            return showError("Select date");
-          }
-
-          if (message === "") {
-            return showError("Enter your message");
-          }
-
-          // SUCCESS
-          successBox.style.display = "block";
-
-          // Uncomment this if you want actual PHP submit AFTER validation
-          form.submit();
+          // ✅ AJAX SEND
+          fetch("booking.php", {
+            method: "POST",
+            body: new FormData(form),
+          })
+            .then((res) => res.text())
+            .then((data) => {
+              if (data.includes("success")) {
+                successBox.style.display = "block";
+                form.reset();
+              } else {
+                showError("Error sending message: " + data);
+              }
+            })
+            .catch((err) => {
+              showError("Something went wrong!");
+              console.error(err);
+            });
         });
 
         function showError(msg) {
